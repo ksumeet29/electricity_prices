@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tvätt – Billigaste strömfönstret</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+  :root {
+    --bg:        #0d1117;
+    --surface:   #161b22;
+    --border:    #21262d;
+    --text:      #e6edf3;
+    --muted:     #7d8590;
+    --green:     #3fb950;
+    --green-dim: #1a3a22;
+    --amber:     #d29922;
+    --red:       #f85149;
+    --blue:      #58a6ff;
+    --mono:      'IBM Plex Mono', monospace;
+    --sans:      'IBM Plex Sans', system-ui, sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    padding: 24px 16px 48px;
+  }
+
+  header { max-width: 680px; margin: 0 auto 32px; }
+
+  .wordmark {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    font-family: var(--mono);
+    font-size: clamp(22px, 5vw, 32px);
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.2;
+  }
+
+  h1 span { color: var(--green); }
+
+  .subtitle { margin-top: 6px; font-size: 14px; color: var(--muted); }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    max-width: 680px;
+    margin: 0 auto 16px;
+  }
+
+  .card-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  @media (max-width: 480px) { .controls { grid-template-columns: 1fr; } }
+
+  label {
+    display: block;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 5px;
+    font-family: var(--mono);
+    letter-spacing: 0.06em;
+  }
+
+  select {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    padding: 9px 12px;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237d8590' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+
+  select:focus { outline: none; border-color: var(--blue); }
+
+  button#findBtn {
+    width: 100%;
+    max-width: 680px;
+    display: block;
+    margin: 0 auto 16px;
+    background: var(--green);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    padding: 13px;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+
+  button#findBtn:hover { opacity: 0.88; }
+  button#findBtn:active { transform: scale(0.98); }
+  button#findBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  #result { display: none; }
+
+  .result-hero { display: flex; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+  .result-big { flex: 1; min-width: 160px; }
+
+  .result-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .result-time {
+    font-family: var(--mono);
+    font-size: clamp(24px, 6vw, 36px);
+    font-weight: 600;
+    color: var(--green);
+    line-height: 1;
+  }
+
+  .result-date { font-size: 12px; color: var(--muted); margin-top: 4px; font-family: var(--mono); }
+
+  .result-stats {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  .stat { min-width: 80px; }
+  .stat-val { font-family: var(--mono); font-size: 18px; font-weight: 600; color: var(--text); }
+  .stat-unit { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+  .stat-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  #chartWrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  #priceChart { display: block; min-width: 400px; }
+
+  .slot-list { display: grid; gap: 4px; margin-top: 4px; }
+
+  .slot-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    border-radius: 5px;
+    font-family: var(--mono);
+    font-size: 13px;
+    background: var(--bg);
+    border: 1px solid transparent;
+  }
+
+  .slot-row.highlight {
+    background: var(--green-dim);
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  .slot-time { min-width: 110px; flex-shrink: 0; }
+  .slot-price { margin-left: auto; font-weight: 600; }
+  .slot-bar-wrap { flex: 1; height: 4px; background: var(--border); border-radius: 2px; min-width: 40px; }
+  .slot-bar { height: 4px; border-radius: 2px; background: var(--muted); }
+  .slot-row.highlight .slot-bar { background: var(--green); }
+
+  #status {
+    max-width: 680px;
+    margin: 0 auto;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--muted);
+    min-height: 20px;
+    padding: 0 4px;
+  }
+
+  #status.err { color: var(--red); }
+
+  footer {
+    max-width: 680px;
+    margin: 32px auto 0;
+    font-size: 12px;
+    color: var(--muted);
+    font-family: var(--mono);
+  }
+
+  footer a { color: var(--blue); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wordmark">Tvättoptimeraren</div>
+  <h1>Billigaste <span>strömfönstret</span></h1>
+  <p class="subtitle">Hittar det billigaste 15-minutersfönstret för din tvättcykel — från och med nu.</p>
+</header>
+
+<div class="card">
+  <div class="card-title">Inställningar</div>
+  <div class="controls">
+    <div>
+      <label for="areaSelect">Elområde</label>
+      <select id="areaSelect">
+        <option value="SE1">SE1 — Luleå / Norra Sverige</option>
+        <option value="SE2">SE2 — Sundsvall / Mellannorra</option>
+        <option value="SE3" selected>SE3 — Stockholm / Mellansverige</option>
+        <option value="SE4">SE4 — Malmö / Södra Sverige</option>
+      </select>
+    </div>
+    <div>
+      <label for="cycleSelect">Tvättprogram</label>
+      <select id="cycleSelect">
+        <option value="3.5">Bomull / Tungt  (3 h 30 min)</option>
+        <option value="2.0" selected>Syntet          (2 h 00 min)</option>
+        <option value="1.0">Snabbtvättning  (1 h 00 min)</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<button id="findBtn">Hitta billigaste fönster →</button>
+
+<div id="status"></div>
+
+<div id="result">
+  <div class="card">
+    <div class="card-title">Rekommendation</div>
+    <div class="result-hero">
+      <div class="result-big">
+        <div class="result-label">Starta klockan</div>
+        <div class="result-time" id="resTime">—</div>
+        <div class="result-date" id="resDate">—</div>
+      </div>
+    </div>
+    <div class="result-stats">
+      <div class="stat">
+        <div class="stat-val" id="resAvg">—</div>
+        <div class="stat-unit">SEK/kWh</div>
+        <div class="stat-label">Snittpriser</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val" id="resCost">—</div>
+        <div class="stat-unit">SEK</div>
+        <div class="stat-label">Est. kostnad*</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val" id="resSlots">—</div>
+        <div class="stat-unit">kvartar</div>
+        <div class="stat-label">Antal perioder</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Prisöversikt — kommande perioder</div>
+    <div id="chartWrap">
+      <canvas id="priceChart" height="120"></canvas>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Ingående perioder</div>
+    <div class="slot-list" id="slotList"></div>
+  </div>
+</div>
+
+<footer>
+  <p>Priser via <a href="https://www.elprisetjustnu.se" target="_blank" rel="noopener">elprisetjustnu.se</a> · Spotpris exkl. moms, nätavgift och påslag</p>
+  <p style="margin-top:6px">* Uppskattad kostnad = snittpriser × programlängd (h). Faktisk förbrukning varierar.</p>
+</footer>
+
+<script>
+function buildUrl(year, month, day, area) {
+  const mm = String(month).padStart(2,'0');
+  const dd = String(day).padStart(2,'0');
+  return `https://www.elprisetjustnu.se/api/v1/prices/${year}/${mm}-${dd}_${area}.json`;
+}
+
+function addDays(date, n) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + n);
+  return d;
+}
+
+// Floor to current 15-min boundary: at 16:05 → 16:00; at 16:17 → 16:15
+function currentSlotStart() {
+  const now = new Date();
+  now.setMinutes(Math.floor(now.getMinutes() / 15) * 15, 0, 0);
+  return now;
+}
+
+function formatTime(date) {
+  return date.toLocaleTimeString('sv-SE', { hour:'2-digit', minute:'2-digit' });
+}
+
+function formatDate(date) {
+  return date.toLocaleDateString('sv-SE', { weekday:'short', day:'numeric', month:'short' });
+}
+
+async function fetchDay(year, month, day, area) {
+  const url = buildUrl(year, month, day, area);
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+async function loadPrices(area) {
+  const cutoff = currentSlotStart();
+  const today = new Date();
+  const tomorrow = addDays(today, 1);
+  let all = [];
+
+  for (const d of [today, tomorrow]) {
+    const isToday = d.toDateString() === today.toDateString();
+    try {
+      const data = await fetchDay(d.getFullYear(), d.getMonth()+1, d.getDate(), area);
+      for (const pt of data) {
+        const slotStart = new Date(pt.time_start);
+        if (slotStart >= cutoff) {
+          all.push({ time: slotStart, price: pt.SEK_per_kWh });
+        }
+      }
+    } catch(e) {
+      // rethrow only for today; tomorrow may not be published yet
+      if (isToday) throw e;
+    }
+  }
+
+  return all;
+}
+
+// Sliding-window minimum over ceil(hours * 60 / 15) slots
+function cheapestWindow(slots, hours) {
+  const w = Math.ceil(hours * 60 / 15);
+  const n = slots.length;
+  if (n < w) return null;
+
+  let sum = 0;
+  for (let k = 0; k < w; k++) sum += slots[k].price;
+  let bestSum = sum, bestIdx = 0;
+
+  for (let i = 1; i + w <= n; i++) {
+    sum += slots[i + w - 1].price - slots[i - 1].price;
+    if (sum < bestSum) { bestSum = sum; bestIdx = i; }
+  }
+
+  return { index: bestIdx, window: w, average: bestSum / w };
+}
+
+function drawChart(slots, bestIdx, bestWindow) {
+  const canvas = document.getElementById('priceChart');
+  const wrap = document.getElementById('chartWrap');
+  const BAR_W = 8, GAP = 2, UNIT = BAR_W + GAP;
+  const H = 120, PAD_TOP = 10, PAD_BOT = 28, PAD_LEFT = 4;
+  const totalW = Math.max(wrap.clientWidth - 2, slots.length * UNIT + PAD_LEFT + 8);
+
+  canvas.width = totalW;
+  canvas.height = H;
+
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, totalW, H);
+
+  const prices = slots.map(s => s.price);
+  const minP = Math.min(...prices);
+  const maxP = Math.max(...prices);
+  const range = maxP - minP || 1;
+  const chartH = H - PAD_TOP - PAD_BOT;
+
+  // Hour grid lines
+  ctx.strokeStyle = '#21262d';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < slots.length; i++) {
+    if (slots[i].time.getMinutes() === 0) {
+      const x = PAD_LEFT + i * UNIT;
+      ctx.beginPath(); ctx.moveTo(x, PAD_TOP); ctx.lineTo(x, H - PAD_BOT + 4); ctx.stroke();
+    }
+  }
+
+  // Bars
+  for (let i = 0; i < slots.length; i++) {
+    const inWin = i >= bestIdx && i < bestIdx + bestWindow;
+    const barH = Math.max(3, ((slots[i].price - minP) / range) * chartH);
+    const x = PAD_LEFT + i * UNIT;
+    const y = H - PAD_BOT - barH;
+    ctx.fillStyle = inWin ? '#3fb950' : '#30363d';
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(x, y, BAR_W, barH, 2);
+    else ctx.rect(x, y, BAR_W, barH);
+    ctx.fill();
+  }
+
+  // Hour labels
+  ctx.fillStyle = '#7d8590';
+  ctx.font = '10px "IBM Plex Mono", monospace';
+  ctx.textAlign = 'left';
+  let lastX = -999;
+  for (let i = 0; i < slots.length; i++) {
+    if (slots[i].time.getMinutes() === 0) {
+      const x = PAD_LEFT + i * UNIT;
+      if (x - lastX > 28) { ctx.fillText(formatTime(slots[i].time), x, H - 8); lastX = x; }
+    }
+  }
+}
+
+function renderResult(slots, r, hours) {
+  const start = slots[r.index];
+  const endT = new Date(slots[r.index + r.window - 1].time.getTime() + 15*60*1000);
+
+  document.getElementById('resTime').textContent = formatTime(start.time) + '–' + formatTime(endT);
+  document.getElementById('resDate').textContent = formatDate(start.time);
+  document.getElementById('resAvg').textContent  = r.average.toFixed(4);
+  document.getElementById('resCost').textContent = (r.average * hours).toFixed(2);
+  document.getElementById('resSlots').textContent = r.window;
+
+  const list = document.getElementById('slotList');
+  list.innerHTML = '';
+  const winSlots = slots.slice(r.index, r.index + r.window);
+  const maxP = Math.max(...winSlots.map(s => s.price));
+
+  winSlots.forEach(s => {
+    const et = new Date(s.time.getTime() + 15*60*1000);
+    const pct = maxP > 0 ? (s.price / maxP) * 100 : 50;
+    const row = document.createElement('div');
+    row.className = 'slot-row highlight';
+    row.innerHTML = `
+      <span class="slot-time">${formatTime(s.time)}–${formatTime(et)}</span>
+      <span class="slot-bar-wrap"><span class="slot-bar" style="width:${pct}%"></span></span>
+      <span class="slot-price">${s.price.toFixed(4)}</span>`;
+    list.appendChild(row);
+  });
+
+  drawChart(slots, r.index, r.window);
+  document.getElementById('result').style.display = 'block';
+}
+
+document.getElementById('findBtn').addEventListener('click', async () => {
+  const area  = document.getElementById('areaSelect').value;
+  const hours = parseFloat(document.getElementById('cycleSelect').value);
+  const btn   = document.getElementById('findBtn');
+  const status = document.getElementById('status');
+
+  btn.disabled = true;
+  btn.textContent = 'Hämtar priser…';
+  status.className = '';
+  status.textContent = '';
+  document.getElementById('result').style.display = 'none';
+
+  try {
+    status.textContent = `Hämtar prisdata för ${area}…`;
+    const slots = await loadPrices(area);
+
+    if (slots.length === 0)
+      throw new Error('Inga kommande priser hittades. Försök igen om en stund.');
+
+    status.textContent = 'Beräknar billigaste fönster…';
+    const r = cheapestWindow(slots, hours);
+
+    if (!r)
+      throw new Error(`Otillräckligt med data för ${hours} h (${Math.ceil(hours*4)} kvartar). Morgondagens priser publiceras vanligen runt kl 13.`);
+
+    status.textContent = '';
+    renderResult(slots, r, hours);
+  } catch(e) {
+    status.className = 'err';
+    status.textContent = `Fel: ${e.message}`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Hitta billigaste fönster →';
+  }
+});
+
+window.addEventListener('load', () => document.getElementById('findBtn').click());
+</script>
+</body>
+</html>
