@@ -508,6 +508,24 @@ function drawChart(slots, bestIdx, bestWindow) {
   }
 }
 
+function renderResult(slots, r, hours) {
+  const start = slots[r.index];
+  const endT = new Date(slots[r.index + r.window - 1].time.getTime() + 15*60*1000);
+
+  document.getElementById('resTime').textContent = formatTime(start.time) + '–' + formatTime(endT);
+  document.getElementById('resDate').textContent = formatDate(start.time);
+  document.getElementById('resAvg').textContent  = r.average.toFixed(4);
+  document.getElementById('resCost').textContent = (r.average * hours).toFixed(2);
+
+  const list = document.getElementById('slotList');
+  list.innerHTML = '';
+  const winSlots = slots.slice(r.index, r.index + r.window);
+  const maxP = Math.max(...winSlots.map(s => s.price));
+
+  drawChart(slots, r.index, r.window);
+  document.getElementById('result').style.display = 'block';
+}
+
 document.getElementById('findBtn').addEventListener('click', async () => {
   const area  = document.getElementById('areaSelect').value;
   const hours = parseFloat(document.getElementById('cycleSelect').value);
@@ -534,6 +552,7 @@ document.getElementById('findBtn').addEventListener('click', async () => {
       throw new Error(`Otillräckligt med data för ${hours} h (${Math.ceil(hours*4)} kvartar). Morgondagens priser publiceras vanligen runt kl 13.`);
 
     status.textContent = '';
+    renderResult(slots, r, hours);
   } catch(e) {
     status.className = 'err';
     status.textContent = `Fel: ${e.message}`;
