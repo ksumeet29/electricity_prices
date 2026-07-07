@@ -233,14 +233,14 @@
     <div>
       <label for="areaSelect">Electricity domain</label>
       <select id="areaSelect">
-        <option value="SE1">SE1 — Luleå / Norra Sverige</option>
-        <option value="SE2">SE2 — Sundsvall / Mellannorra</option>
-        <option value="SE3" selected>SE3 — Stockholm / Mellansverige</option>
-        <option value="SE4">SE4 — Malmö / Södra Sverige</option>
+        <option value="SE1">SE1 — Luleå / Norra Sverige / North Sweden</option>
+        <option value="SE2">SE2 — Sundsvall / Mellannorra / Middle North</option>
+        <option value="SE3" selected>SE3 — Stockholm / Mellansverige / Middle Sweden</option>
+        <option value="SE4">SE4 — Malmö / Södra Sverige / South Sweden</option>
       </select>
     </div>
     <div>
-      <label for="cycleSelect">Laundry program</label>
+      <label for="cycleSelect">Tvättprogram</label>
       <select id="cycleSelect">
         <option value="3.5" selected>Cotton  (3 h 30 min)</option>
         <option value="2.0">Synthetic          (2 h 00 min)</option>
@@ -259,7 +259,7 @@
     <div class="card-title">Recommendation</div>
     <div class="result-hero">
       <div class="result-big">
-        <div class="result-label">Optimal Time Slot</div>
+        <div class="result-label">Start Time</div>
         <div class="result-time" id="resTime">—</div>
         <div class="result-date" id="resDate">—</div>
       </div>
@@ -283,6 +283,11 @@
     <div id="chartWrap">
       <canvas id="priceChart" height="180"></canvas>
     </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Laundry window — 15-minute intervals</div>
+    <div class="slot-list" id="slotList"></div>
   </div>
 </div>
 
@@ -501,6 +506,36 @@ function drawChart(slots, bestIdx, bestWindow) {
       }
     }
   }
+}
+
+function renderResult(slots, r, hours) {
+  const start = slots[r.index];
+  const endT = new Date(slots[r.index + r.window - 1].time.getTime() + 15*60*1000);
+
+  document.getElementById('resTime').textContent = formatTime(start.time) + '–' + formatTime(endT);
+  document.getElementById('resDate').textContent = formatDate(start.time);
+  document.getElementById('resAvg').textContent  = r.average.toFixed(4);
+  document.getElementById('resCost').textContent = (r.average * hours).toFixed(2);
+
+  const list = document.getElementById('slotList');
+  list.innerHTML = '';
+  const winSlots = slots.slice(r.index, r.index + r.window);
+  const maxP = Math.max(...winSlots.map(s => s.price));
+
+  // Bar width proportional to price within the window (visual only, no price label)
+  winSlots.forEach(s => {
+    const et = new Date(s.time.getTime() + 15*60*1000);
+    const pct = maxP > 0 ? (s.price / maxP) * 100 : 50;
+    const row = document.createElement('div');
+    row.className = 'slot-row highlight';
+    row.innerHTML = `
+      <span class="slot-time">${formatTime(s.time)}–${formatTime(et)}</span>
+      <span class="slot-bar-wrap"><span class="slot-bar" style="width:${pct}%"></span></span>`;
+    list.appendChild(row);
+  });
+
+  drawChart(slots, r.index, r.window);
+  document.getElementById('result').style.display = 'block';
 }
 
 document.getElementById('findBtn').addEventListener('click', async () => {
