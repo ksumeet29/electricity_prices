@@ -529,17 +529,17 @@ document.getElementById('findBtn').addEventListener('click', async () => {
   document.getElementById('result').style.display = 'none';
 
   try {
-    status.textContent = `Hämtar prisdata för ${area}…`;
+    status.textContent = `Find price data for ${area}…`;
     const slots = await loadPrices(area);
 
     if (slots.length === 0)
-      throw new Error('Inga kommande priser hittades. Försök igen om en stund.');
+      throw new Error('No upcoming events were found. Please try again in a little while.');
 
-    status.textContent = 'Beräknar billigaste fönster…';
+    status.textContent = 'Calculates the cheapest timeslot…';
     const r = cheapestWindow(slots, hours);
 
     if (!r)
-      throw new Error(`Otillräckligt med data för ${hours} h (${Math.ceil(hours*4)} kvartar). Morgondagens priser publiceras vanligen runt kl 13.`);
+      throw new Error(`Insufficient data for ${hours} h (${Math.ceil(hours*4)} quarters). Tomorrow’s prices are usually published around 1 pm.`);
 
     status.textContent = '';
     renderResult(slots, r, hours);
@@ -548,7 +548,7 @@ document.getElementById('findBtn').addEventListener('click', async () => {
     status.textContent = `Fel: ${e.message}`;
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Hitta billigaste fönster →';
+    btn.textContent = 'Find the Cheapest Slot →';
   }
 });
 
