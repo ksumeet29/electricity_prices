@@ -503,36 +503,6 @@ function drawChart(slots, bestIdx, bestWindow) {
   }
 }
 
-function renderResult(slots, r, hours) {
-  const start = slots[r.index];
-  const endT = new Date(slots[r.index + r.window - 1].time.getTime() + 15*60*1000);
-
-  document.getElementById('resTime').textContent = formatTime(start.time) + '–' + formatTime(endT);
-  document.getElementById('resDate').textContent = formatDate(start.time);
-  document.getElementById('resAvg').textContent  = r.average.toFixed(4);
-  document.getElementById('resCost').textContent = (r.average * hours).toFixed(2);
-
-  const list = document.getElementById('slotList');
-  list.innerHTML = '';
-  const winSlots = slots.slice(r.index, r.index + r.window);
-  const maxP = Math.max(...winSlots.map(s => s.price));
-
-  // Bar width proportional to price within the window (visual only, no price label)
-  winSlots.forEach(s => {
-    const et = new Date(s.time.getTime() + 15*60*1000);
-    const pct = maxP > 0 ? (s.price / maxP) * 100 : 50;
-    const row = document.createElement('div');
-    row.className = 'slot-row highlight';
-    row.innerHTML = `
-      <span class="slot-time">${formatTime(s.time)}–${formatTime(et)}</span>
-      <span class="slot-bar-wrap"><span class="slot-bar" style="width:${pct}%"></span></span>`;
-    list.appendChild(row);
-  });
-
-  drawChart(slots, r.index, r.window);
-  document.getElementById('result').style.display = 'block';
-}
-
 document.getElementById('findBtn').addEventListener('click', async () => {
   const area  = document.getElementById('areaSelect').value;
   const hours = parseFloat(document.getElementById('cycleSelect').value);
