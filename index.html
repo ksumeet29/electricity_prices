@@ -512,11 +512,6 @@ function renderResult(slots, r, hours) {
   document.getElementById('resAvg').textContent  = r.average.toFixed(4);
   document.getElementById('resCost').textContent = (r.average * hours).toFixed(2);
 
-  const list = document.getElementById('slotList');
-  list.innerHTML = '';
-  const winSlots = slots.slice(r.index, r.index + r.window);
-  const maxP = Math.max(...winSlots.map(s => s.price));
-
   drawChart(slots, r.index, r.window);
   document.getElementById('result').style.display = 'block';
 }
