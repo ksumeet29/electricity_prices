@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tvätt – Billigaste strömfönstret</title>
+<title>Optimal Laundry timeslot</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
 
@@ -222,83 +222,78 @@
 <body>
 
 <header>
-  <div class="wordmark">Tvättoptimeraren</div>
-  <h1>Billigaste <span>strömfönstret</span></h1>
-  <p class="subtitle">Hittar det billigaste 15-minutersfönstret för din tvättcykel — från och med nu.</p>
+  <div class="wordmark">Optimal Laundry slot</div>
+  <h1>Cheapest <span>timeslot</span></h1>
+  <p class="subtitle">Find the cheapest 15-minute slot for your wash cycle — starting now</p>
 </header>
 
 <div class="card">
-  <div class="card-title">Inställningar</div>
+  <div class="card-title">Make your choices</div>
   <div class="controls">
     <div>
-      <label for="areaSelect">Elområde</label>
+      <label for="areaSelect">Electricity domain</label>
       <select id="areaSelect">
-        <option value="SE1">SE1 — Luleå / Norra Sverige</option>
-        <option value="SE2">SE2 — Sundsvall / Mellannorra</option>
-        <option value="SE3" selected>SE3 — Stockholm / Mellansverige</option>
-        <option value="SE4">SE4 — Malmö / Södra Sverige</option>
+        <option value="SE1">SE1 — Luleå / Norra Sverige / North Sweden</option>
+        <option value="SE2">SE2 — Sundsvall / Mellannorra / Middle North</option>
+        <option value="SE3" selected>SE3 — Stockholm / Mellansverige / Middle Sweden</option>
+        <option value="SE4">SE4 — Malmö / Södra Sverige / South Sweden</option>
       </select>
     </div>
     <div>
       <label for="cycleSelect">Tvättprogram</label>
       <select id="cycleSelect">
-        <option value="3.5">Bomull / Tungt  (3 h 30 min)</option>
-        <option value="2.0" selected>Syntet          (2 h 00 min)</option>
-        <option value="1.0">Snabbtvättning  (1 h 00 min)</option>
+        <option value="3.5" selected>Cotton  (3 h 30 min)</option>
+        <option value="2.0">Synthetic          (2 h 00 min)</option>
+        <option value="1.0">FastWash  (1 h 00 min)</option>
       </select>
     </div>
   </div>
 </div>
 
-<button id="findBtn">Hitta billigaste fönster →</button>
+<button id="findBtn">Find the cheapest slot →</button>
 
 <div id="status"></div>
 
 <div id="result">
   <div class="card">
-    <div class="card-title">Rekommendation</div>
+    <div class="card-title">Recommendation</div>
     <div class="result-hero">
       <div class="result-big">
-        <div class="result-label">Starta klockan</div>
+        <div class="result-label">Start Time</div>
         <div class="result-time" id="resTime">—</div>
         <div class="result-date" id="resDate">—</div>
       </div>
     </div>
     <div class="result-stats">
       <div class="stat">
-        <div class="stat-val" id="resAvg">—</div>
-        <div class="stat-unit">SEK/kWh</div>
-        <div class="stat-label">Snittpriser</div>
-      </div>
-      <div class="stat">
         <div class="stat-val" id="resCost">—</div>
         <div class="stat-unit">SEK</div>
-        <div class="stat-label">Est. kostnad*</div>
+        <div class="stat-label">Cost (1 kW)*</div>
       </div>
       <div class="stat">
-        <div class="stat-val" id="resSlots">—</div>
-        <div class="stat-unit">kvartar</div>
-        <div class="stat-label">Antal perioder</div>
+        <div class="stat-val" id="resAvg">—</div>
+        <div class="stat-unit">SEK/kWh</div>
+        <div class="stat-label">Average Spot Price</div>
       </div>
     </div>
   </div>
 
   <div class="card">
-    <div class="card-title">Prisöversikt — kommande perioder</div>
+    <div class="card-title">Price overview — forthcoming periods</div>
     <div id="chartWrap">
-      <canvas id="priceChart" height="120"></canvas>
+      <canvas id="priceChart" height="180"></canvas>
     </div>
   </div>
 
   <div class="card">
-    <div class="card-title">Ingående perioder</div>
+    <div class="card-title">Laundry window — 15-minute intervals</div>
     <div class="slot-list" id="slotList"></div>
   </div>
 </div>
 
 <footer>
-  <p>Priser via <a href="https://www.elprisetjustnu.se" target="_blank" rel="noopener">elprisetjustnu.se</a> · Spotpris exkl. moms, nätavgift och påslag</p>
-  <p style="margin-top:6px">* Uppskattad kostnad = snittpriser × programlängd (h). Faktisk förbrukning varierar.</p>
+  <p>Prices via <a href="https://www.elprisetjustnu.se" target="_blank" rel="noopener">elprisetjustnu.se</a> · Spot price excluding VAT, network charge and surcharges</p>
+  <p style="margin-top:6px">* Cost = average prices × programme duration at a load of 1 kW. Actual consumption varies.</p>
 </footer>
 
 <script>
@@ -381,55 +376,134 @@ function cheapestWindow(slots, hours) {
 
 function drawChart(slots, bestIdx, bestWindow) {
   const canvas = document.getElementById('priceChart');
-  const wrap = document.getElementById('chartWrap');
+  const wrap   = document.getElementById('chartWrap');
+
+  // Layout constants
   const BAR_W = 8, GAP = 2, UNIT = BAR_W + GAP;
-  const H = 120, PAD_TOP = 10, PAD_BOT = 28, PAD_LEFT = 4;
-  const totalW = Math.max(wrap.clientWidth - 2, slots.length * UNIT + PAD_LEFT + 8);
+  const H        = 180;   // total canvas height (px)
+  const PAD_TOP  = 12;    // space above top tick
+  const PAD_BOT  = 26;    // space below bottom tick (x-axis labels)
+  const PAD_LEFT = 58;    // y-axis label area (wide enough for "-0.12")
+  const PAD_RIGHT = 8;
 
-  canvas.width = totalW;
-  canvas.height = H;
-
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, totalW, H);
-
+  // ── Price range → nice Y scale ──
   const prices = slots.map(s => s.price);
-  const minP = Math.min(...prices);
-  const maxP = Math.max(...prices);
-  const range = maxP - minP || 1;
-  const chartH = H - PAD_TOP - PAD_BOT;
+  const rawMin = Math.min(...prices);
+  const rawMax = Math.max(...prices);
+  const rawRange = rawMax - rawMin || 0.01;
 
-  // Hour grid lines
-  ctx.strokeStyle = '#21262d';
-  ctx.lineWidth = 1;
+  function niceStep(range) {
+    const rough = range / 4;
+    const mag   = Math.pow(10, Math.floor(Math.log10(rough)));
+    for (const m of [1, 2, 2.5, 5, 10]) {
+      if (m * mag >= rough) return m * mag;
+    }
+    return mag * 10;
+  }
+  const step  = niceStep(rawRange);
+  const yMin  = Math.floor(rawMin / step) * step;
+  const yMax  = Math.ceil(rawMax  / step) * step;
+  const yRange = yMax - yMin || step;
+
+  // ── Canvas sizing ──
+  const barsArea = slots.length * UNIT + PAD_RIGHT;
+  const totalW   = Math.max((wrap.clientWidth || 500) - 2, PAD_LEFT + barsArea);
+  canvas.width   = totalW;
+  canvas.height  = H;
+
+  const ctx    = canvas.getContext('2d');
+  ctx.clearRect(0, 0, totalW, H);
+  const chartH = H - PAD_TOP - PAD_BOT;  // pixel height of bar area
+
+  // Helper: price value → canvas Y coordinate
+  function priceToY(v) {
+    return PAD_TOP + chartH - ((v - yMin) / yRange) * chartH;
+  }
+
+  // ── Y-axis ticks, labels, horizontal grid lines ──
+  const yTicks = [];
+  for (let v = yMin; v <= yMax + step * 0.001; v += step) {
+    yTicks.push(parseFloat(v.toPrecision(8)));
+  }
+
+  ctx.font      = '9px "IBM Plex Mono", monospace';
+  ctx.textAlign = 'right';
+
+  yTicks.forEach(v => {
+    const y = priceToY(v);
+    // Grid line
+    ctx.strokeStyle = '#21262d';
+    ctx.lineWidth   = 1;
+    ctx.beginPath();
+    ctx.moveTo(PAD_LEFT, y);
+    ctx.lineTo(totalW - PAD_RIGHT, y);
+    ctx.stroke();
+    // Tick label
+    ctx.fillStyle = '#7d8590';
+    ctx.fillText(v.toFixed(2), PAD_LEFT - 5, y + 3.5);
+  });
+
+  // Y-axis unit label, rotated 90°, sitting inside the left padding
+  ctx.save();
+  ctx.font      = '9px "IBM Plex Mono", monospace';
+  ctx.fillStyle = '#4d5966';
+  ctx.textAlign = 'center';
+  ctx.translate(10, PAD_TOP + chartH / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText('SEK / kWh', 0, 0);
+  ctx.restore();
+
+  // ── Vertical hour dividers ──
+  ctx.lineWidth   = 1;
+  ctx.strokeStyle = '#2a3038';
   for (let i = 0; i < slots.length; i++) {
     if (slots[i].time.getMinutes() === 0) {
       const x = PAD_LEFT + i * UNIT;
-      ctx.beginPath(); ctx.moveTo(x, PAD_TOP); ctx.lineTo(x, H - PAD_BOT + 4); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x, PAD_TOP);
+      ctx.lineTo(x, H - PAD_BOT + 4);
+      ctx.stroke();
     }
   }
 
-  // Bars
+  // ── Zero line (if price range crosses zero) ──
+  if (yMin < 0 && yMax > 0) {
+    const y0 = priceToY(0);
+    ctx.strokeStyle = '#3d4450';
+    ctx.lineWidth   = 1.5;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(PAD_LEFT, y0); ctx.lineTo(totalW - PAD_RIGHT, y0); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // ── Bars (drawn from zero baseline, handles negative prices) ──
+  const baseline = priceToY(Math.max(yMin, 0));   // Y of the 0 line (or yMin if all negative)
   for (let i = 0; i < slots.length; i++) {
     const inWin = i >= bestIdx && i < bestIdx + bestWindow;
-    const barH = Math.max(3, ((slots[i].price - minP) / range) * chartH);
-    const x = PAD_LEFT + i * UNIT;
-    const y = H - PAD_BOT - barH;
+    const x     = PAD_LEFT + i * UNIT;
+    const top   = priceToY(slots[i].price);
+    const barH  = Math.abs(baseline - top);
+
     ctx.fillStyle = inWin ? '#3fb950' : '#30363d';
+    const y = slots[i].price >= 0 ? top : baseline;
     ctx.beginPath();
-    if (ctx.roundRect) ctx.roundRect(x, y, BAR_W, barH, 2);
-    else ctx.rect(x, y, BAR_W, barH);
+    if (ctx.roundRect) ctx.roundRect(x, y, BAR_W, Math.max(2, barH), [2, 2, 0, 0]);
+    else               ctx.rect(x, y, BAR_W, Math.max(2, barH));
     ctx.fill();
   }
 
-  // Hour labels
+  // ── X-axis hour labels ──
   ctx.fillStyle = '#7d8590';
-  ctx.font = '10px "IBM Plex Mono", monospace';
+  ctx.font      = '10px "IBM Plex Mono", monospace';
   ctx.textAlign = 'left';
-  let lastX = -999;
+  let lastLabelX = -999;
   for (let i = 0; i < slots.length; i++) {
     if (slots[i].time.getMinutes() === 0) {
       const x = PAD_LEFT + i * UNIT;
-      if (x - lastX > 28) { ctx.fillText(formatTime(slots[i].time), x, H - 8); lastX = x; }
+      if (x - lastLabelX > 30) {
+        ctx.fillText(formatTime(slots[i].time), x + 1, H - 8);
+        lastLabelX = x;
+      }
     }
   }
 }
@@ -442,13 +516,13 @@ function renderResult(slots, r, hours) {
   document.getElementById('resDate').textContent = formatDate(start.time);
   document.getElementById('resAvg').textContent  = r.average.toFixed(4);
   document.getElementById('resCost').textContent = (r.average * hours).toFixed(2);
-  document.getElementById('resSlots').textContent = r.window;
 
   const list = document.getElementById('slotList');
   list.innerHTML = '';
   const winSlots = slots.slice(r.index, r.index + r.window);
   const maxP = Math.max(...winSlots.map(s => s.price));
 
+  // Bar width proportional to price within the window (visual only, no price label)
   winSlots.forEach(s => {
     const et = new Date(s.time.getTime() + 15*60*1000);
     const pct = maxP > 0 ? (s.price / maxP) * 100 : 50;
@@ -456,8 +530,7 @@ function renderResult(slots, r, hours) {
     row.className = 'slot-row highlight';
     row.innerHTML = `
       <span class="slot-time">${formatTime(s.time)}–${formatTime(et)}</span>
-      <span class="slot-bar-wrap"><span class="slot-bar" style="width:${pct}%"></span></span>
-      <span class="slot-price">${s.price.toFixed(4)}</span>`;
+      <span class="slot-bar-wrap"><span class="slot-bar" style="width:${pct}%"></span></span>`;
     list.appendChild(row);
   });
 
