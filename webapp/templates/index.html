@@ -3,23 +3,24 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Elpris Electricity Analyzer</title>
+  <title>Cheapest Laundry Slot</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   <main class="card">
-    <h1>Cheapest Washing Time Finder</h1>
-    <p class="subtitle">Find the cheapest electricity window for your washing programme in Sweden.</p>
+    <h1>Cheapest Laundry Slot Finder</h1>
+    <p class="subtitle">Compare Sweden’s electricity price zones and find the best window to run your laundry.</p>
+    <p class="help-text">Choose the area that matches your location, pick a washing programme, and the analyzer will suggest the cheapest slot for your cycle.</p>
 
     {% if error %}
       <div class="alert">{{ error }}</div>
     {% endif %}
 
     <form action="{{ url_for('analyze') }}" method="post">
-      <label for="area">Electricity area</label>
+      <label for="area">Electricity domain</label>
       <select id="area" name="area" required>
         {% for a in areas %}
-          <option value="{{ a }}">{{ a }}</option>
+          <option value="{{ a.value }}">{{ a.label }}</option>
         {% endfor %}
       </select>
 

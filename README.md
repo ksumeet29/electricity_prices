@@ -24,12 +24,10 @@ include/           Header files (fetch.hpp, parse.hpp)
 src/               C++ source (main.cpp, fetch.cpp, parse.cpp)
 BUILD.bazel        Bazel build rules for the elpris binary
 MODULE.bazel       Bazel module dependencies (rules_cc)
-CMakeLists.txt     Alternative CMake build (used by run.py for local dev)
 run.py             Local dev helper: cmake build + run + cleanup
 webapp/            Flask frontend (app.py, templates/, static/)
 Dockerfile         Multi-stage build: Bazel build -> Flask runtime image
 render.yaml         Render.com Blueprint for one-click deployment
-.github/workflows/ci.yml   GitHub Actions CI (Bazel build + Docker build/smoke test)
 ```
 
 ## Washing programmes
@@ -41,12 +39,6 @@ render.yaml         Render.com Blueprint for one-click deployment
 | 3     | Quick wash       | 1.0 h    |
 
 ## Running the CLI locally
-
-Using CMake (via the helper script, no persistent build directory):
-
-```bash
-python3 run.py --area SE3 --cycle 1
-```
 
 Using Bazel directly:
 

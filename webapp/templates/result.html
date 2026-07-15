@@ -3,37 +3,79 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Elpris Electricity Analyzer - Result</title>
+  <title>Cheapest Laundry Slot</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 </head>
 <body>
   <main class="card">
-    <h1>Cheapest Washing Time Finder</h1>
+    <h1>Cheapest Laundry Slot Finder</h1>
 
     <section class="result">
       <h2>{{ data.cycle_label }}</h2>
+      <p><strong>{{ data.slot_window }}</strong></p>
       <p><strong>Area:</strong> {{ data.area }}</p>
       <p><strong>Starts at:</strong> {{ data.start }}</p>
-      <p><strong>Average price:</strong> {{ "%.4f"|format(data.average_price) }} SEK/kWh</p>
-      <p><strong>Estimated total cost:</strong> {{ "%.4f"|format(data.total_cost) }} SEK/kWh</p>
+      <p><strong>Average price:</strong> {{ "%.4f"|format(data.average_price) }} SEK/KWh</p>
+      <p><strong>Estimated total cost:</strong> {{ "%.4f"|format(data.total_cost) }} SEK/KWh</p>
 
-      <h3>Included intervals</h3>
-      <table>
-        <thead>
-          <tr><th>Time</th><th>Price (SEK/kWh)</th></tr>
-        </thead>
-        <tbody>
-          {% for iv in data.intervals %}
-          <tr>
-            <td>{{ iv.time }}</td>
-            <td>{{ "%.4f"|format(iv.price) }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+      <h3>Price chart</h3>
+      <canvas id="priceChart" height="220"></canvas>
     </section>
 
     <a class="back-link" href="{{ url_for('index') }}">&larr; Run another analysis</a>
   </main>
+
+  <script>
+    const labels = {{ data.chart.labels | tojson }};
+    const values = {{ data.chart.values | tojson }};
+    const selected = {{ data.chart.selected | tojson }};
+
+    const ctx = document.getElementById('priceChart');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Price (SEK/KWh)',
+          data: values,
+          borderColor: '#4f46e5',
+          backgroundColor: 'rgba(79, 70, 229, 0.15)',
+          pointRadius: 3,
+          pointHoverRadius: 5,
+          pointBackgroundColor: labels.map((_, index) => selected.includes(index) ? '#ef4444' : '#4f46e5'),
+          pointBorderColor: labels.map((_, index) => selected.includes(index) ? '#ef4444' : '#4f46e5'),
+          tension: 0.2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Time'
+            },
+            ticks: {
+              maxTicksLimit: 10
+            }
+          },
+          y: {
+            beginAtZero: false,
+            title: {
+              display: true,
+              text: 'Price (SEK/KWh)'
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: false
+          }
+        }
+      }
+    });
+  </script>
 </body>
 </html>
