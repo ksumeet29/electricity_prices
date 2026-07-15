@@ -27,7 +27,12 @@ body {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
-h1 { margin-top: 0; font-size: 1.6rem; }
+h1 {
+  margin-top: 0;
+  font-size: 2rem;
+  line-height: 1.2;
+}
+
 .subtitle { color: var(--muted); margin-bottom: 1.5rem; }
 
 form { display: flex; flex-direction: column; gap: 0.4rem; }
@@ -62,7 +67,18 @@ button:hover { opacity: 0.9; }
   margin-bottom: 1rem;
 }
 
-.result h2 { color: var(--accent); }
+.result h2 {
+  color: var(--accent);
+  font-size: 1.4rem;
+  margin-bottom: 0.4rem;
+}
+
+.result strong {
+  color: var(--accent);
+  font-size: 1.4rem;
+  display: inline-block;
+  margin-bottom: 0.2rem;
+}
 
 table {
   width: 100%;

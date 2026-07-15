@@ -36,36 +36,6 @@ def format_slot_window(start_time: str, hours: float) -> str:
         return start_time or ""
 
 
-def build_chart_series(intervals: list[dict], start_time: str, hours: float) -> dict:
-    labels = []
-    values = []
-    selected = []
-
-    for item in intervals:
-        time_value = item.get("time", "")
-        if not time_value:
-            continue
-        labels.append(time_value)
-        values.append(float(item.get("price", 0) or 0))
-
-    try:
-        start_dt = datetime.fromisoformat(start_time.replace("Z", "+00:00"))
-        end_dt = start_dt + timedelta(hours=hours)
-        selected_range = [
-            (idx, item.get("time", ""))
-            for idx, item in enumerate(intervals)
-            if item.get("time")
-            and start_dt <= datetime.fromisoformat(item["time"].replace("Z", "+00:00")) < end_dt
-        ]
-    except (TypeError, ValueError):
-        selected_range = []
-
-    for idx, _ in selected_range:
-        selected.append(idx)
-
-    return {"labels": labels, "values": values, "selected": selected}
-
-
 @app.route("/", methods=["GET"])
 def index():
     return render_template("index.html", areas=AREAS, cycles=CYCLES)
@@ -104,7 +74,6 @@ def analyze():
         )
         data = json.loads(proc.stdout)
         data["slot_window"] = format_slot_window(data.get("start", ""), data.get("hours", 0))
-        data["chart"] = build_chart_series(data.get("intervals", []), data.get("start", ""), data.get("hours", 0))
         return render_template(
             "result.html", areas=AREAS, cycles=CYCLES, data=data,
         )
