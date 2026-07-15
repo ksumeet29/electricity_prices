@@ -1,6 +1,6 @@
 # Elpris Electricity Analyzer
 
-Find the cheapest contiguous electricity price window (SE3 / SE4 price areas)
+Find the cheapest contiguous electricity price window (SE1 / SE2 / SE3 / SE4 price areas)
 for a given washing programme, using real Swedish spot prices from
 [elprisetjustnu.se](https://www.elprisetjustnu.se/). Available both as a
 C++ command-line tool and as a web application.
@@ -11,7 +11,7 @@ C++ command-line tool and as a web application.
    prices for a given price area via libcurl, parses the JSON response, and
    finds the cheapest contiguous window long enough to cover the chosen
    washing programme's duration.
-2. A Flask web app wraps the executable: the user picks an area (SE3/SE4)
+2. A Flask web app wraps the executable: the user picks an area (SE1/SE2/SE3/SE4)
    and a washing programme in a form, the backend calls `elpris --json` and
    renders the result as a human-readable page.
 3. Everything is packaged into a single Docker image (Bazel build stage +
@@ -57,7 +57,7 @@ bazel build //:elpris
 ```
 
 CLI flags:
-- `--area <SE3|SE4>` — price area (default `SE3`)
+- `--area <SE1|SE2|SE3|SE4>` — price area (default `SE3`)
 - `--cycle <1|2|3>` — washing programme (prompts interactively if omitted)
 - `--json` — emit machine-readable JSON instead of human-readable text
 
@@ -67,6 +67,7 @@ CLI flags:
 
 ```bash
 docker build -t elpris-web .
+docker rm -f elpris-web 2>$null
 docker run -d -p 8080:8080 --name elpris-web elpris-web
 ```
 

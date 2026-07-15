@@ -12,7 +12,7 @@ app = Flask(__name__)
 # Path to the compiled elpris binary inside the container.
 EXECUTABLE = os.environ.get("ELPRIS_BIN", "/app/bin/elpris")
 
-AREAS = ["SE3", "SE4"]
+AREAS = ["SE1", "SE2", "SE3", "SE4"]
 CYCLES = [
     {"value": 1, "label": "Cotton/Heavy (3.5h)"},
     {"value": 2, "label": "Synthetic (2.0h)"},
@@ -33,7 +33,7 @@ def analyze():
     if area not in AREAS:
         return render_template(
             "index.html", areas=AREAS, cycles=CYCLES,
-            error=f"Invalid area '{area}'. Choose SE3 or SE4.",
+            error=f"Invalid area '{area}'. Choose one of: SE1, SE2, SE3, SE4.",
         ), 400
 
     if cycle not in {"1", "2", "3"}:
