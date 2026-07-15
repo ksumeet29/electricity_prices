@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: elpris-electricity-analyzer
+    name: elpris
     env: docker
     plan: free
     dockerfilePath: ./Dockerfile
