@@ -1,33 +1,32 @@
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_binary")
 
 cc_library(
-        name = "fetch",
-        srcs = ["src/fetch.cpp"],
-        hdrs = [
-                "include/fetch.hpp",
-                "include/parse.hpp",
-        ],
-        includes = ["include"],
-        visibility = ["//visibility:public"],
-        linkopts = ["-lcurl"],
+    name = "fetch",
+    srcs = ["src/fetch.cpp"],
+    hdrs = [
+        "include/fetch.hpp",
+        "include/parse.hpp",
+    ],
+    includes = ["include"],
+    visibility = ["//visibility:public"],
 )
 
 cc_library(
-        name = "parse",
-        srcs = ["src/parse.cpp"],
-        hdrs = [
-                "include/fetch.hpp",
-                "include/parse.hpp",
-        ],
-        includes = ["include"],
-        visibility = ["//visibility:public"],
-        linkopts = ["-lcurl"],
+    name = "parse",
+    srcs = ["src/parse.cpp"],
+    hdrs = [
+        "include/fetch.hpp",
+        "include/parse.hpp",
+    ],
+    includes = ["include"],
+    visibility = ["//visibility:public"],
 )
 
 cc_binary(
-        name = "elpris",
-        srcs = ["src/main.cpp"],
-        deps = [":fetch", 
-                ":parse",
-            ],
+    name = "elpris",
+    srcs = ["src/main.cpp"],
+    deps = [
+        ":fetch",
+        ":parse",
+    ],
 )

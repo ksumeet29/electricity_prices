@@ -1,38 +1,68 @@
 #include "fetch.hpp"
 #include "parse.hpp"
 
-static size_t write_cb(void* contents, size_t size, size_t nmemb, void* userp) {
-  auto* s = static_cast<std::string*>(userp);
-  s->append((char*)contents, size * nmemb);
-  return size * nmemb;
+#include <cstdio>
+#include <cstdlib>
+#include <ctime>
+#include <iomanip>
+#include <sstream>
+#include <stdexcept>
+
+static std::string shell_escape(const std::string& value) {
+  std::string escaped;
+  escaped.reserve(value.size() + 2);
+  escaped.push_back('"');
+  for (char ch : value) {
+    if (ch == '"') {
+      escaped += "\\\"";
+    } else {
+      escaped.push_back(ch);
+    }
+  }
+  escaped.push_back('"');
+  return escaped;
 }
 
 std::string http_get(const std::string& url) {
-  CURL* c = curl_easy_init();
-  if (!c)
-    throw std::runtime_error("curl init failed");
-
-  std::string out;
-  curl_easy_setopt(c, CURLOPT_URL, url.c_str());
-  curl_easy_setopt(c, CURLOPT_FOLLOWLOCATION, 1L);
-  curl_easy_setopt(c, CURLOPT_WRITEFUNCTION, write_cb);
-  curl_easy_setopt(c, CURLOPT_WRITEDATA, &out);
-
-  CURLcode rc = curl_easy_perform(c);
-  if (rc != CURLE_OK) {
-    curl_easy_cleanup(c);
-    throw std::runtime_error("curl error: " +
-                             std::string(curl_easy_strerror(rc)));
+#ifdef _WIN32
+  const std::string command = "curl.exe -L -s -w \"\\n%{http_code}\" " + shell_escape(url);
+  FILE* pipe = _popen(command.c_str(), "r");
+#else
+  const std::string command = "curl -L -s -w \"\\n%{http_code}\" " + shell_escape(url);
+  FILE* pipe = popen(command.c_str(), "r");
+#endif
+  if (!pipe) {
+    throw std::runtime_error("failed to run curl");
   }
 
-  long code;
-  curl_easy_getinfo(c, CURLINFO_RESPONSE_CODE, &code);
-  curl_easy_cleanup(c);
+  std::string out;
+  char buffer[4096];
+  while (std::fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+    out.append(buffer);
+  }
 
-  if (code < 200 || code >= 300)
+#ifdef _WIN32
+  const int status = _pclose(pipe);
+#else
+  const int status = pclose(pipe);
+#endif
+  if (status != 0) {
+    throw std::runtime_error("curl request failed");
+  }
+
+  const size_t pos = out.find_last_of('\n');
+  if (pos == std::string::npos) {
+    throw std::runtime_error("curl response missing status line");
+  }
+
+  const std::string body = out.substr(0, pos);
+  const std::string status_text = out.substr(pos + 1);
+  const long code = std::strtol(status_text.c_str(), nullptr, 10);
+  if (code < 200 || code >= 300) {
     throw std::runtime_error("HTTP status " + std::to_string(code));
+  }
 
-  return out;
+  return body;
 }
 
 std::string build_url(int year, int month, int day, const std::string& area) {
@@ -69,8 +99,9 @@ std::vector<PricePoint> fetch_prices(const std::string& area) {
 
   for (int dayOffset = 0; dayOffset < 2; ++dayOffset) {
     int yy = y, mm = m, dd = d;
-    if (dayOffset == 1)
+    if (dayOffset == 1) {
       add_days(yy, mm, dd, 1);
+    }
 
     std::string url = build_url(yy, mm, dd, area);
 
@@ -79,8 +110,9 @@ std::vector<PricePoint> fetch_prices(const std::string& area) {
       auto vec = parse_json_manual(json);
       result.insert(result.end(), vec.begin(), vec.end());
     } catch (...) {
-      if (dayOffset == 0)
+      if (dayOffset == 0) {
         throw;
+      }
       // tomorrow not available yet → skip
     }
   }

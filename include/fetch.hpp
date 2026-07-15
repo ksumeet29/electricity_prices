@@ -2,6 +2,7 @@
 #define FETCH_HPP_
 #include <string>
 #include <vector>
+#include <iostream>
 
 struct PricePoint {
   std::string time;  // ISO timestamp

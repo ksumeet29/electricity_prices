@@ -1,5 +1,12 @@
 #include "parse.hpp"
 
+#include <algorithm>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <ctime>
+#include <iostream>
+
 // ------------------ JSON PARSER ------------------
 std::vector<PricePoint> parse_json_manual(const std::string& json) {
   std::vector<PricePoint> out;
@@ -38,16 +45,38 @@ std::vector<PricePoint> parse_json_manual(const std::string& json) {
   return out;
 }
 
+static std::time_t parse_timestamp(const std::string& value) {
+  std::tm tm{};
+  int year = 0;
+  int month = 0;
+  int day = 0;
+  int hour = 0;
+  int minute = 0;
+
+  if (std::sscanf(value.c_str(), "%d-%d-%dT%d:%d", &year, &month, &day, &hour, &minute) != 5) {
+    return -1;
+  }
+
+  tm.tm_year = year - 1900;
+  tm.tm_mon = month - 1;
+  tm.tm_mday = day;
+  tm.tm_hour = hour;
+  tm.tm_min = minute;
+  tm.tm_sec = 0;
+  tm.tm_isdst = -1;
+  return std::mktime(&tm);
+}
+
 // ------------------ TIME DELTA HELPER ------------------
 static size_t minutes_between(const std::string& t1, const std::string& t2) {
-  std::tm a{}, b{};
-  strptime(t1.substr(0, 16).c_str(), "%Y-%m-%dT%H:%M", &a);
-  strptime(t2.substr(0, 16).c_str(), "%Y-%m-%dT%H:%M", &b);
-
-  time_t ta = mktime(&a);
-  time_t tb = mktime(&b);
-  return std::llabs((tb - ta) / 60);
+  const std::time_t ta = parse_timestamp(t1.substr(0, 16));
+  const std::time_t tb = parse_timestamp(t2.substr(0, 16));
+  if (ta < 0 || tb < 0) {
+    return 0;
+  }
+  return static_cast<size_t>(std::llabs((tb - ta) / 60));
 }
+
 // ------------------ WINDOW SIZE HELPER ------------------
 static size_t window_for_hours(const std::vector<PricePoint>& v, double hours) {
   size_t totalMinutes = static_cast<size_t>(hours * 60.0);

@@ -1,6 +1,10 @@
 #include "fetch.hpp"
 #include "parse.hpp"
 
+#include <cstdlib>
+#include <iomanip>
+#include <iostream>
+
 int main(int argc, char** argv) {
   // --- Parse CLI args ---
   // Positional arg 1 (if not starting with '-') is treated as area, for
