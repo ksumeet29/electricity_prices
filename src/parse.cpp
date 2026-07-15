@@ -1,17 +1,9 @@
 #include "parse.hpp"
-#include <algorithm>
-#include <cctype>
-#include <cstdlib>
-#include <ctime>
-#include <iostream>
-#include <iomanip>
-#include <sstream>
-#include <stdexcept>
 
 // ------------------ JSON PARSER ------------------
 std::vector<PricePoint> parse_json_manual(const std::string& json) {
   std::vector<PricePoint> out;
-  std::cout << "Parsing Data Manually" << std::endl;
+  std::cerr << "Parsing Data Manually" << std::endl;
   size_t pos = 0;
   while (true) {
     size_t tpos = json.find("\"time_start\"", pos);
@@ -42,29 +34,19 @@ std::vector<PricePoint> parse_json_manual(const std::string& json) {
     out.push_back({time, price});
     pos = end;
   }
-  std::cout << "Parsing Successful" << std::endl;
+  std::cerr << "Parsing Successful" << std::endl;
   return out;
 }
 
 // ------------------ TIME DELTA HELPER ------------------
 static size_t minutes_between(const std::string& t1, const std::string& t2) {
-    std::tm a{};
-    std::tm b{};
+  std::tm a{}, b{};
+  strptime(t1.substr(0, 16).c_str(), "%Y-%m-%dT%H:%M", &a);
+  strptime(t2.substr(0, 16).c_str(), "%Y-%m-%dT%H:%M", &b);
 
-    std::istringstream ss1(t1.substr(0, 16));
-    ss1 >> std::get_time(&a, "%Y-%m-%dT%H:%M");
-
-    std::istringstream ss2(t2.substr(0, 16));
-    ss2 >> std::get_time(&b, "%Y-%m-%dT%H:%M");
-
-    if (ss1.fail() || ss2.fail()) {
-        throw std::runtime_error("Failed to parse timestamp");
-    }
-
-    std::time_t ta = std::mktime(&a);
-    std::time_t tb = std::mktime(&b);
-
-    return static_cast<size_t>(std::llabs((tb - ta) / 60));
+  time_t ta = mktime(&a);
+  time_t tb = mktime(&b);
+  return std::llabs((tb - ta) / 60);
 }
 // ------------------ WINDOW SIZE HELPER ------------------
 static size_t window_for_hours(const std::vector<PricePoint>& v, double hours) {

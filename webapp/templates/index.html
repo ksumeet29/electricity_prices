@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Elpris Electricity Analyzer</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="card">
+    <h1>Cheapest Washing Time Finder</h1>
+    <p class="subtitle">Find the cheapest electricity window for your washing programme in Sweden.</p>
+
+    {% if error %}
+      <div class="alert">{{ error }}</div>
+    {% endif %}
+
+    <form action="{{ url_for('analyze') }}" method="post">
+      <label for="area">Electricity area</label>
+      <select id="area" name="area" required>
+        {% for a in areas %}
+          <option value="{{ a }}">{{ a }}</option>
+        {% endfor %}
+      </select>
+
+      <label for="cycle">Washing programme</label>
+      <select id="cycle" name="cycle" required>
+        {% for c in cycles %}
+          <option value="{{ c.value }}">{{ c.label }}</option>
+        {% endfor %}
+      </select>
+
+      <button type="submit">Find cheapest slot</button>
+    </form>
+  </main>
+</body>
+</html>

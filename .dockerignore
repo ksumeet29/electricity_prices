@@ -1,0 +1,7 @@
+build/
+bazel-*/
+.git/
+*.log
+__pycache__/
+*.pyc
+.clang-format

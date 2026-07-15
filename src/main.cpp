@@ -1,29 +1,42 @@
-#include <algorithm>
-#include <iomanip>
-#include <iostream>
-#include <string>
-#include <vector>
-
 #include "fetch.hpp"
 #include "parse.hpp"
 
 int main(int argc, char** argv) {
-  std::cout << "Executable run begins" << std::endl;
+  // --- Parse CLI args ---
+  // Positional arg 1 (if not starting with '-') is treated as area, for
+  // backward compatibility with existing callers (e.g. run.py).
+  // --area <AREA>, --cycle <1|2|3>, --json are also supported so this
+  // executable can be driven non-interactively (e.g. from a web backend).
+  std::string area = "SE3";
+  int cycle = -1;
+  bool json_output = false;
+
+  std::vector<std::string> args(argv + 1, argv + argc);
+  for (size_t i = 0; i < args.size(); ++i) {
+    if (args[i] == "--json") {
+      json_output = true;
+    } else if (args[i] == "--cycle" && i + 1 < args.size()) {
+      cycle = std::atoi(args[++i].c_str());
+    } else if (args[i] == "--area" && i + 1 < args.size()) {
+      area = args[++i];
+    } else if (!args[i].empty() && args[i][0] != '-') {
+      area = args[i];  // positional area
+    }
+  }
+
+  if (!json_output)
+    std::cout << "Executable run begins" << std::endl;
 
   try {
-    std::string area = "SE3";
-    if (argc > 1)
-      area = argv[1];
-
     // --- Washing cycle selection ---
-    int cycle = 0;
-
-    std::cout << "Select washing cycle:\n"
-              << "  1 = Cotton/Heavy  (3.5 h)\n"
-              << "  2 = Synthetic     (2.0 h)\n"
-              << "  3 = Quick wash    (1.0 h)\n"
-              << "Enter choice (1-3): ";
-    std::cin >> cycle;
+    if (cycle == -1) {
+      std::cout << "Select washing cycle:\n"
+                << "  1 = Cotton/Heavy  (3.5 h)\n"
+                << "  2 = Synthetic     (2.0 h)\n"
+                << "  3 = Quick wash    (1.0 h)\n"
+                << "Enter choice (1-3): ";
+      std::cin >> cycle;
+    }
 
     if (cycle < 1 || cycle > 3) {
       std::cerr << "Invalid washing cycle. Please choose 1, 2, or 3.\n";
@@ -47,11 +60,13 @@ int main(int argc, char** argv) {
         break;
     }
 
-    std::cout << "\nWashing programme : " << cycleLabel << "\n"
-              << "Area              : " << area << "\n\n";
+    if (!json_output)
+      std::cout << "\nWashing programme : " << cycleLabel << "\n"
+                << "Area              : " << area << "\n\n";
 
     // --- Fetch & parse ---
-    std::cout << "Fetching prices..." << std::endl;
+    if (!json_output)
+      std::cout << "Fetching prices..." << std::endl;
     auto prices = fetch_prices(area);
 
     // Collect unique dates
@@ -65,10 +80,37 @@ int main(int argc, char** argv) {
     }
 
     // --- Find cheapest window ---
-    std::cout << "Finding cheapest window..." << std::endl;
+    if (!json_output)
+      std::cout << "Finding cheapest window..." << std::endl;
     auto r = cheapest_window(prices, hours);
 
-    // --- Results ---
+    if (json_output) {
+      // --- Machine-readable output for callers like a web backend ---
+      std::cout << "{\n"
+                << "  \"area\": \"" << area << "\",\n"
+                << "  \"cycle\": " << cycle << ",\n"
+                << "  \"cycle_label\": \"" << cycleLabel << "\",\n"
+                << "  \"hours\": " << hours << ",\n"
+                << "  \"average_price\": " << std::fixed
+                << std::setprecision(4) << r.average << ",\n"
+                << "  \"start\": \"" << prices[r.index].time << "\",\n"
+                << "  \"total_cost\": " << std::fixed << std::setprecision(4)
+                << r.average * hours << ",\n"
+                << "  \"intervals\": [\n";
+      for (size_t i = 0; i < r.window; ++i) {
+        std::cout << "    {\"time\": \"" << prices[r.index + i].time
+                   << "\", \"price\": " << std::fixed << std::setprecision(4)
+                   << prices[r.index + i].price << "}";
+        if (i + 1 < r.window)
+          std::cout << ",";
+        std::cout << "\n";
+      }
+      std::cout << "  ]\n"
+                << "}\n";
+      return 0;
+    }
+
+    // --- Results (human readable) ---
     std::cout << "\nFound " << prices.size() << " data points on ";
     for (size_t i = 0; i < dates.size(); ++i) {
       if (i)

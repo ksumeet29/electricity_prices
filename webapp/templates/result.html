@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Elpris Electricity Analyzer - Result</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="card">
+    <h1>Cheapest Washing Time Finder</h1>
+
+    <section class="result">
+      <h2>{{ data.cycle_label }}</h2>
+      <p><strong>Area:</strong> {{ data.area }}</p>
+      <p><strong>Starts at:</strong> {{ data.start }}</p>
+      <p><strong>Average price:</strong> {{ "%.4f"|format(data.average_price) }} SEK/kWh</p>
+      <p><strong>Estimated total cost:</strong> {{ "%.4f"|format(data.total_cost) }} SEK/kWh</p>
+
+      <h3>Included intervals</h3>
+      <table>
+        <thead>
+          <tr><th>Time</th><th>Price (SEK/kWh)</th></tr>
+        </thead>
+        <tbody>
+          {% for iv in data.intervals %}
+          <tr>
+            <td>{{ iv.time }}</td>
+            <td>{{ "%.4f"|format(iv.price) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+
+    <a class="back-link" href="{{ url_for('index') }}">&larr; Run another analysis</a>
+  </main>
+</body>
+</html>

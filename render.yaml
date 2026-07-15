@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: elpris-electricity-analyzer
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /healthz
+    envVars:
+      - key: PORT
+        value: 8080
